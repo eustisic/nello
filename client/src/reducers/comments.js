@@ -5,6 +5,10 @@ export default function comments(state = [], action) {
       let {comments} = action.card;
       return comments;
     }
+    case "CREATE_COMMENT_SUCCESS": {
+      let comment = action.comment
+      return state.concat(comment)
+    }
     default:
       return state;
   }

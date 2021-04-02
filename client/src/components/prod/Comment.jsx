@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
+import { DateTime } from "luxon";
+import { useDispatch, useSelector } from "react-redux";
 
-const Comment = () => {
-  let [commentText, setCommentText] = useState(
-    "The activities have not been implemented yet"
-  );
+const Comment = ({comment}) => {
+  // const dispatch = useDispatch();
+  let dt = DateTime.fromISO(comment.createdAt).toLocaleString()
 
   return (
     <li>
@@ -12,19 +13,17 @@ const Comment = () => {
       </div>
       <h3>Taylor Peat</h3>
       <div className="comment static-comment">
-        <span>The activities are not functional.</span>
+        <span>{comment.text}</span>
       </div>
       <small>
-        22 minutes ago - <span className="link">Edit</span> -{" "}
+        {dt}<span className="link">   Edit</span> -{" "}
         <span className="link">Delete</span>
       </small>
       <div className="comment">
         <label>
           <textarea
-            value={commentText}
             required=""
             rows="1"
-            onChange={(e) => setCommentText(e.target.value)}
           ></textarea>
           <div>
             <a className="light-button card-icon sm-icon"></a>

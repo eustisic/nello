@@ -4,6 +4,8 @@ import CardContainer from "./CardContainer";
 import { useDispatch, useSelector } from "react-redux";
 import * as actions from '../../actions/ListActions';
 import * as cardActions from '../../actions/CardActions';
+import { useDrop } from 'react-dnd';
+import { ItemTypes } from '../../ItemTypes';
 
 const List = (props) => {
   const [ inputTitle, setInputTitle ] = useState(false);
@@ -51,6 +53,16 @@ const List = (props) => {
     }
   }
 
+  const [{ canDrop, isOver }, drop] = useDrop(() => ({
+    accept: ItemTypes.CARD,
+    drop: () => ({ title: props.list.title, id: props.list.id }),
+    collect: (monitor) => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
+    }),
+  }));
+  const isActive = canDrop && isOver;
+
   const displayTitleInput = () => {
     return (
       inputTitle ?
@@ -69,7 +81,11 @@ const List = (props) => {
 
   return (
     <div className={`list-wrapper ${props.activeList ? 'add-dropdown-active' : ''}`}>
-      <div className="list-background">
+      <div 
+        className="list-background"
+        ref={drop} 
+        role={'List'} 
+      >
         <div className="list">
           <a className="more-icon sm-icon" href=""></a>
           <div>

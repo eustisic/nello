@@ -9,6 +9,14 @@ export function createCardRequest() {
   return { type: types.CREATE_CARD_REQUEST };
 }
 
+export function createCommentSuccess(comment) {
+  return { type: types.CREATE_COMMENT_SUCCESS, comment };
+}
+
+export function createCommentRequest() {
+  return { type: types.CREATE_COMMENT_REQUEST };
+}
+
 export function fetchCardSuccess(card) {
   return { type: types.FETCH_CARD_SUCCESS, card };
 }
@@ -47,7 +55,6 @@ export function fetchCard(id) {
   };
 }
 
-
 export function editCard(id, card) {
   return function (dispatch) {
     dispatch(editCardRequest());
@@ -55,4 +62,13 @@ export function editCard(id, card) {
       dispatch(editCardSuccess(data));
     });
   };
+}
+
+export function createComment(comment) {
+  return function (dispatch) {
+    dispatch(createCommentRequest());
+    apiClient.createComment(comment, (data) => {
+      dispatch(createCommentSuccess(data))
+    })
+  }
 }

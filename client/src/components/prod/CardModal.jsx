@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, Link } from "react-router-dom";
 import * as actions from "../../actions/CardActions";
-import Comment from './Comment';
-import Action from './Action';
+import Comment from "./Comment";
+import Action from "./Action";
 
 const CardModal = () => {
   // let [commentText, setCommentText] = useState(
@@ -12,26 +12,29 @@ const CardModal = () => {
 
   const dispatch = useDispatch();
   const { id } = useParams();
-  const state = useSelector((state) => state);
+  let cards = useSelector(state => state.cards)
+  let lists = useSelector(state => state.lists)
+  let commentArray = useSelector((state) => state.comments);
+  let actionArray = useSelector((state) => state.actions);
 
-  let card = state.cards.find((card) => card.id === id);
-  let list = state.lists.find((list) => list.id === card.listId);
-  let commentArray = state.comments;
-  let actionArray = state.actions;
+  let card = cards.find((card) => card.id === id);
+  let list = lists.find((list) => list.id === card.listId);
+
 
   let commentActions = commentArray.concat(actionArray).sort((a, b) => {
-    return new Date(a.createdAt) - new Date(b.createdAt)
-  })
+    return new Date(a.createdAt) - new Date(b.createdAt);
+  });
 
   // working on rendering actions + comments
   console.log(commentActions);
 
   card = card || {};
   list = list || {};
-  
+
   let [cardTitle, setCardTitle] = useState(card.title);
   let [cardDescription, setCardDescription] = useState(card.description);
   let [activeDescriptionForm, setActiveDescriptionFrom] = useState(false);
+  let [commentText, setCommentText] = useState("");
 
   useEffect(() => {
     dispatch(actions.fetchCard(id));
@@ -40,50 +43,61 @@ const CardModal = () => {
   useEffect(() => {
     setCardTitle(card.title);
     setCardDescription(card.description);
-  }, [card.title, card.description])
-
+  }, [card.title, card.description]);
 
   // Continue here, We need some validation to check for any edits made to a card
   //  there are several properties we have to consider, refer to 1.10.1
   const handleSubmit = (updatedCard) => {
     if (cardTitle.length > 0) {
-      dispatch(actions.editCard(card.id, {card: updatedCard}));
+      dispatch(actions.editCard(card.id, { card: updatedCard }));
     } else {
-      alert('wtf you doin?')
+      alert("wtf you doin?");
     }
-  }
+  };
 
   const handleDescriptionSave = (updatedCard) => {
     handleSubmit(updatedCard);
     setActiveDescriptionFrom(false);
+  };
+
+
+
+  const createComment = () => {
+    dispatch(actions.createComment({cardId: id, comment: {text: commentText}}))
   }
 
   const descriptionForm = () => {
     if (activeDescriptionForm) {
       return (
         <>
-          <textarea 
-            value={cardDescription}className="textarea-toggle" 
-            rows="1" 
+          <textarea
+            value={cardDescription}
+            className="textarea-toggle"
+            rows="1"
             autoFocus
-            onChange={({target}) => setCardDescription(target.value)}
-          >
-          </textarea>
+            onChange={({ target }) => setCardDescription(target.value)}
+          ></textarea>
           <div>
-            <div className="button" value="Save" onClick={() => handleDescriptionSave({description: cardDescription})}>
+            <div
+              className="button"
+              value="Save"
+              onClick={() =>
+                handleDescriptionSave({ description: cardDescription })
+              }
+            >
               Save
             </div>
-            <i className="x-icon icon" onClick={() => setActiveDescriptionFrom(false)}></i>
+            <i
+              className="x-icon icon"
+              onClick={() => setActiveDescriptionFrom(false)}
+            ></i>
           </div>
         </>
-      )
+      );
     }
-    
-    return (
-      <p className="textarea-overlay">{card.description}</p>
-    )
-  }
 
+    return <p className="textarea-overlay">{card.description}</p>;
+  };
 
   return (
     <div id="modal-container">
@@ -101,7 +115,7 @@ const CardModal = () => {
             className="list-title"
             style={{ height: "45px" }}
             onChange={(e) => setCardTitle(e.target.value)}
-            onBlur={() => handleSubmit({title: cardTitle})}
+            onBlur={() => handleSubmit({ title: cardTitle })}
           ></textarea>
           <p>
             in list <a className="link">{list && list.title}</a>
@@ -144,14 +158,34 @@ const CardModal = () => {
               </ul>
               <form className="description">
                 <p>Description</p>
-                <span id="description-edit" className="link" onClick={() => setActiveDescriptionFrom(true)}>
+                <span
+                  id="description-edit"
+                  className="link"
+                  onClick={() => setActiveDescriptionFrom(true)}
+                >
                   Edit
                 </span>
                 {descriptionForm()}
-                <p id="description-edit-options" className={card.description !== cardDescription ? "" : "hidden"}>
+                <p
+                  id="description-edit-options"
+                  className={
+                    card.description !== cardDescription ? "" : "hidden"
+                  }
+                >
                   You have unsaved edits on this field.{" "}
-                  <span className="link" onClick={() => setActiveDescriptionFrom(true)}>View edits</span> -{" "}
-                  <span className="link" onClick={() => setCardDescription(card.description)}>Discard</span>
+                  <span
+                    className="link"
+                    onClick={() => setActiveDescriptionFrom(true)}
+                  >
+                    View edits
+                  </span>{" "}
+                  -{" "}
+                  <span
+                    className="link"
+                    onClick={() => setCardDescription(card.description)}
+                  >
+                    Discard
+                  </span>
                 </p>
               </form>
             </li>
@@ -167,6 +201,8 @@ const CardModal = () => {
                       required=""
                       rows="1"
                       placeholder="Write a comment..."
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
                     ></textarea>
                     <div>
                       <a className="light-button card-icon sm-icon"></a>
@@ -179,6 +215,7 @@ const CardModal = () => {
                         type="submit"
                         className="button not-implemented"
                         value="Save"
+                        onClick={createComment}
                       />
                     </div>
                   </label>
@@ -192,92 +229,12 @@ const CardModal = () => {
                 <li className="not-implemented">Show Details</li>
               </ul>
               <ul className="modal-activity-list">
-                {/* working */}
-                <Comment />
-                <Action />
-                {/* <li>
-                  <div className="member-container">
-                    <div className="card-member">TP</div>
-                  </div>
-                  <h3>Taylor Peat</h3>
-                  <div className="comment static-comment">
-                    <span>The activities are not functional.</span>
-                  </div>
-                  <small>
-                    22 minutes ago - <span className="link">Edit</span> -{" "}
-                    <span className="link">Delete</span>
-                  </small>
-                  <div className="comment">
-                    <label>
-                      <textarea
-                        value={commentText}
-                        required=""
-                        rows="1"
-                        onChange={(e) => setCommentText(e.target.value)}
-                      ></textarea>
-                      <div>
-                        <a className="light-button card-icon sm-icon"></a>
-                        <a className="light-button smiley-icon sm-icon"></a>
-                        <a className="light-button email-icon sm-icon"></a>
-                      </div>
-                      <div>
-                        <p>You haven&apos;t typed anything!</p>
-                        <input
-                          type="submit"
-                          className="button not-implemented"
-                          value="Save"
-                        />
-                        <i className="x-icon icon"></i>
-                      </div>
-                    </label>
-                  </div>
-                </li> */}
-                {/* <li>
-                  <div className="member-container">
-                    <div className="card-member small-size">VR</div>
-                  </div>
-                  <p>
-                    <span className="member-name">Victor Reyes</span> changed
-                    the background of this board{" "}
-                    <small>yesterday at 4:53 PM</small>
-                  </p>
-                </li> */}
-                {/* <li className="activity-comment">
-                  <div className="member-container">
-                    <div className="card-member">VR</div>
-                  </div>
-                  <h3>Victor Reyes</h3>
-                  <div className="comment static-comment">
-                    <span>Example of a comment.</span>
-                  </div>
-                  <small>
-                    22 minutes ago - <span className="link">Edit</span> -{" "}
-                    <span className="link">Delete</span>
-                  </small>
-                  <div className="comment">
-                    <label>
-                      <textarea
-                        defaultValue="Example of a comment."
-                        required=""
-                        rows="1"
-                      ></textarea>
-                      <div>
-                        <a className="light-button card-icon sm-icon"></a>
-                        <a className="light-button smiley-icon sm-icon"></a>
-                        <a className="light-button email-icon sm-icon"></a>
-                      </div>
-                      <div>
-                        <p>You haven&apos;t typed anything!</p>
-                        <input
-                          type="submit"
-                          className="button not-implemented"
-                          value="Save"
-                        />
-                        <i className="x-icon icon"></i>
-                      </div>
-                    </label>
-                  </div>
-                </li> */}
+                {commentActions.map((item) => {
+                  if (item.hasOwnProperty("text")) {
+                    return <Comment key={item.id} comment={item} />;
+                  }
+                  return <Action key={item.id} action={item} />;
+                })}
               </ul>
             </li>
           </ul>
@@ -328,3 +285,93 @@ const CardModal = () => {
 };
 
 export default CardModal;
+
+{
+  /* <li>
+                  <div className="member-container">
+                    <div className="card-member">TP</div>
+                  </div>
+                  <h3>Taylor Peat</h3>
+                  <div className="comment static-comment">
+                    <span>The activities are not functional.</span>
+                  </div>
+                  <small>
+                    22 minutes ago - <span className="link">Edit</span> -{" "}
+                    <span className="link">Delete</span>
+                  </small>
+                  <div className="comment">
+                    <label>
+                      <textarea
+                        value={commentText}
+                        required=""
+                        rows="1"
+                        onChange={(e) => setCommentText(e.target.value)}
+                      ></textarea>
+                      <div>
+                        <a className="light-button card-icon sm-icon"></a>
+                        <a className="light-button smiley-icon sm-icon"></a>
+                        <a className="light-button email-icon sm-icon"></a>
+                      </div>
+                      <div>
+                        <p>You haven&apos;t typed anything!</p>
+                        <input
+                          type="submit"
+                          className="button not-implemented"
+                          value="Save"
+                        />
+                        <i className="x-icon icon"></i>
+                      </div>
+                    </label>
+                  </div>
+                </li> */
+}
+{
+  /* <li>
+                  <div className="member-container">
+                    <div className="card-member small-size">VR</div>
+                  </div>
+                  <p>
+                    <span className="member-name">Victor Reyes</span> changed
+                    the background of this board{" "}
+                    <small>yesterday at 4:53 PM</small>
+                  </p>
+                </li> */
+}
+{
+  /* <li className="activity-comment">
+                  <div className="member-container">
+                    <div className="card-member">VR</div>
+                  </div>
+                  <h3>Victor Reyes</h3>
+                  <div className="comment static-comment">
+                    <span>Example of a comment.</span>
+                  </div>
+                  <small>
+                    22 minutes ago - <span className="link">Edit</span> -{" "}
+                    <span className="link">Delete</span>
+                  </small>
+                  <div className="comment">
+                    <label>
+                      <textarea
+                        defaultValue="Example of a comment."
+                        required=""
+                        rows="1"
+                      ></textarea>
+                      <div>
+                        <a className="light-button card-icon sm-icon"></a>
+                        <a className="light-button smiley-icon sm-icon"></a>
+                        <a className="light-button email-icon sm-icon"></a>
+                      </div>
+                      <div>
+                        <p>You haven&apos;t typed anything!</p>
+                        <input
+                          type="submit"
+                          className="button not-implemented"
+                          value="Save"
+                        />
+                        <i className="x-icon icon"></i>
+                      </div>
+                    </label>
+                  </div>
+                </li> */
+}
